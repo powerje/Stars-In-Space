@@ -4,204 +4,105 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import android.content.SharedPreferences;
+import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
-import android.os.Handler;
-import android.service.wallpaper.WallpaperService;
-import android.view.SurfaceHolder;
 
-public class Stars extends WallpaperService {
+class Stars {
+	
+	final ArrayList<Bitmap> mLargeStars;
+	final ArrayList<Bitmap> mMediumStars;
+	final ArrayList<Bitmap> mSmallStars;
 
-	private static final String SHARED_PREFS_NAME = "Stars In Space Preferences";
-	private final Handler mHandler = new Handler();
-	private static int maxWidth;
+	final List<Star> stars = new ArrayList<Star>();
 
-	@Override
-	public void onCreate() {
-		super.onCreate();
-		SharedPreferences prefs = Stars.this.getSharedPreferences(
-				SHARED_PREFS_NAME, 0);
-		// Boolean b = prefs.getBoolean("Example Setting", false); 2nd
-		// arg->default value if attribute doesn't exist
+	final Random mRandom = new Random();
 
+	final Context mContext;
+	final private Paint mPaint;
+
+	final private static int MAX_NEW_STARS = 3;
+
+	final int[] drawables = { R.drawable.star0, R.drawable.star1,
+			R.drawable.star2, R.drawable.star3, R.drawable.star4,
+			R.drawable.star5, R.drawable.star6, R.drawable.star7,
+			R.drawable.star8, R.drawable.star9 };
+	final int mNumberOfFrames = drawables.length;
+
+	boolean mMovingUp;
+
+	static class Star {
+		int x;
+		int y;
+		int frame;
+		int speed;
+		int width;
+		ArrayList<Bitmap> stars;
 	}
 
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
-	}
+	Stars(Context c, int maxDim, Paint paint) {
 
-	@Override
-	public Engine onCreateEngine() {
-		return new StarEngine();
-	}
+		mContext = c;
+		mPaint = paint;
 
-	class StarEngine extends Engine {
-		private final Paint mPaint = new Paint();
-		// private long mStartTime;
-
-		private boolean hasSetup = false;
-		private Starfield small;
-		private Starfield medium;
-		private Starfield large;
-
-		private final Runnable mDrawStars = new Runnable() {
-			public void run() {
-				drawFrame();
-			}
-		};
-		private boolean mVisible;
-
-		StarEngine() {
-			final Paint paint = mPaint;
-			paint.setAntiAlias(false);
-
-			// setup star fields
-			ArrayList<Bitmap> smallStars = new ArrayList<Bitmap>();
-			ArrayList<Bitmap> mediumStars = new ArrayList<Bitmap>();
-			ArrayList<Bitmap> largeStars = new ArrayList<Bitmap>();
-			// small fields
-			smallStars.add(BitmapFactory.decodeResource(getResources(),
-					R.drawable.small_stars));
-			smallStars.add(BitmapFactory.decodeResource(getResources(),
-					R.drawable.small_stars2));
-			smallStars.add(BitmapFactory.decodeResource(getResources(),
-					R.drawable.small_stars3));
-			smallStars.add(BitmapFactory.decodeResource(getResources(),
-					R.drawable.small_stars4));
-			// medium fields
-			mediumStars.add(BitmapFactory.decodeResource(getResources(),
-					R.drawable.medium_stars));
-			mediumStars.add(BitmapFactory.decodeResource(getResources(),
-					R.drawable.medium_stars2));
-			mediumStars.add(BitmapFactory.decodeResource(getResources(),
-					R.drawable.medium_stars3));
-			mediumStars.add(BitmapFactory.decodeResource(getResources(),
-					R.drawable.medium_stars4));
-			// large fields
-			largeStars.add(BitmapFactory.decodeResource(getResources(),
-					R.drawable.large_stars));
-			largeStars.add(BitmapFactory.decodeResource(getResources(),
-					R.drawable.large_stars2));
-			largeStars.add(BitmapFactory.decodeResource(getResources(),
-					R.drawable.large_stars3));
-			largeStars.add(BitmapFactory.decodeResource(getResources(),
-					R.drawable.large_stars4));
-
-			small = new Starfield(smallStars, Starfield.STARFIELD_SMALL);
-			medium = new Starfield(mediumStars, Starfield.STARFIELD_MEDIUM);
-			large = new Starfield(largeStars, Starfield.STARFIELD_LARGE);
+		mLargeStars = new ArrayList<Bitmap>();
+		for (int i = 0; i < drawables.length; i++) {
+			mLargeStars.add(StarUtils.scaleWithRatio(c, drawables[i],
+					maxDim / 2));
 		}
 
-		@Override
-		public void onDestroy() {
-			super.onDestroy();
-			mHandler.removeCallbacks(mDrawStars);
+		mMediumStars = new ArrayList<Bitmap>();
+		for (int i = 0; i < drawables.length; i++) {
+			mMediumStars.add(StarUtils.scaleWithRatio(c, drawables[i],
+					maxDim / 3));
 		}
 
-		@Override
-		public void onVisibilityChanged(boolean visible) {
-			mVisible = visible;
-			if (visible) {
-				drawFrame();
+		mSmallStars = new ArrayList<Bitmap>();
+		for (int i = 0; i < drawables.length; i++) {
+			mSmallStars.add(StarUtils.scaleWithRatio(c, drawables[i],
+					maxDim / 4));
+		}
+	}
+
+	public void draw(Canvas c) {
+		int newStars = 0;
+		// create some arbitrary number of stars up to a given max
+		while (mRandom.nextInt(100) > 40 && newStars < MAX_NEW_STARS) {
+			// create new star
+			Star s = new Star();
+			s.x = c.getWidth();
+			s.y = mRandom.nextInt(c.getHeight());
+			s.frame = mRandom.nextInt(mNumberOfFrames);
+
+			int size = mRandom.nextInt(3);
+
+			if (size == 0) {
+				s.speed = 30;
+				s.width = mLargeStars.get(0).getWidth();
+				s.stars = mLargeStars;
+			} else if (size == 1) {
+				s.speed = 20;
+				s.width = mMediumStars.get(0).getWidth();
+				s.stars = mMediumStars;
 			} else {
-				mHandler.removeCallbacks(mDrawStars);
+				s.speed = 10;
+				s.width = mSmallStars.get(0).getWidth();
+				s.stars = mSmallStars;
 			}
+			stars.add(s);
+			newStars++;
 		}
 
-		@Override
-		public void onSurfaceCreated(SurfaceHolder holder) {
-			super.onSurfaceCreated(holder);
-		}
-
-		@Override
-		public void onSurfaceDestroyed(SurfaceHolder holder) {
-			super.onSurfaceDestroyed(holder);
-			mVisible = false;
-			mHandler.removeCallbacks(mDrawStars);
-		}
-
-		/**
-		 * Draw a single animation frame.
-		 */
-		void drawFrame() {
-			final SurfaceHolder holder = getSurfaceHolder();
-
-			Canvas c = null;
-			try {
-				c = holder.lockCanvas();
-				if (c != null) {
-					if (!hasSetup) {
-						maxWidth = c.getWidth();
-						hasSetup = true;
-					}
-					// draw something
-					c.drawColor(Color.BLACK);
-					small.draw(c);
-					medium.draw(c);
-					large.draw(c);
-				}
-			} finally {
-				if (c != null)
-					holder.unlockCanvasAndPost(c);
-			}
-
-			// Reschedule the next redraw
-			mHandler.removeCallbacks(mDrawStars);
-			if (mVisible) {
-				// approx 90 fps
-				mHandler.postDelayed(mDrawStars, 1000 / 90);
-			}
-		}
-
-		class Starfield {
-			Bitmap currentStars;
-			Bitmap nextStars;
-
-			float x = 0f;
-			final float y = 0f;
-			final int type;
-			final int numStarsImages;
-
-			private static final int STARFIELD_SMALL = 0;
-			private static final int STARFIELD_MEDIUM = 1;
-			private static final int STARFIELD_LARGE = 2;
-			final ArrayList<Bitmap> stars;
-
-			Starfield(final ArrayList<Bitmap> stars, final int type) {
-				// initialize Starfield
-				this.stars = stars;
-				this.type = type;
-				numStarsImages = stars.size();
-				currentStars = stars.get(new Random().nextInt(numStarsImages));
-				nextStars = stars.get(new Random().nextInt(numStarsImages));
-				x = maxWidth;
-			}
-
-			public void draw(Canvas c) {
-				// default large: 20, medium: 10, small: 5
-				if (type == STARFIELD_LARGE)
-					x -= 20f;
-				if (type == STARFIELD_MEDIUM)
-					x -= 15f;
-				else
-					x -= 10f;
-
-				if (x < (-maxWidth)) {
-					x = 0;
-
-					// randomly choose new set of stars
-					currentStars = nextStars;
-					nextStars = stars.get(new Random().nextInt(numStarsImages));
-				}
-
-				c.drawBitmap(currentStars, x, y, mPaint);
-				c.drawBitmap(nextStars, maxWidth + x, y, mPaint);
-
+		for (int i = 0; i < stars.size(); i++) {
+			Star s = stars.get(i);
+			c.drawBitmap(s.stars.get(s.frame), s.x, s.y, mPaint);
+			s.frame++;
+			s.frame %= mNumberOfFrames;
+			s.x -= s.speed;
+			if (s.x < -s.width) {
+				stars.remove(i);
+				i--;
 			}
 		}
 	}
