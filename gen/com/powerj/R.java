@@ -11,20 +11,23 @@ public final class R {
     public static final class attr {
     }
     public static final class drawable {
-        public static final int icon=0x7f020000;
-        public static final int large_stars=0x7f020001;
-        public static final int large_stars2=0x7f020002;
-        public static final int large_stars3=0x7f020003;
-        public static final int large_stars4=0x7f020004;
-        public static final int medium_stars=0x7f020005;
-        public static final int medium_stars2=0x7f020006;
-        public static final int medium_stars3=0x7f020007;
-        public static final int medium_stars4=0x7f020008;
-        public static final int small_stars=0x7f020009;
-        public static final int small_stars2=0x7f02000a;
-        public static final int small_stars3=0x7f02000b;
-        public static final int small_stars4=0x7f02000c;
-        public static final int thumbnail=0x7f02000d;
+        public static final int feature=0x7f020000;
+        public static final int hi_res_icon=0x7f020001;
+        public static final int icon=0x7f020002;
+        public static final int promo=0x7f020003;
+        public static final int star0=0x7f020004;
+        public static final int star1=0x7f020005;
+        public static final int star2=0x7f020006;
+        public static final int star3=0x7f020007;
+        public static final int star4=0x7f020008;
+        public static final int star5=0x7f020009;
+        public static final int star6=0x7f02000a;
+        public static final int star7=0x7f02000b;
+        public static final int star8=0x7f02000c;
+        public static final int star9=0x7f02000d;
+        public static final int stars_screen_shot=0x7f02000e;
+        public static final int stars_screen_shot2=0x7f02000f;
+        public static final int thumbnail=0x7f020010;
     }
     public static final class layout {
         public static final int main=0x7f030000;
