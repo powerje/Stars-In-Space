@@ -29,9 +29,6 @@ public class StarsEngine extends WallpaperService {
 
 	class StarEngine extends Engine {
 		private final Paint mPaint = new Paint();
-		// private long mStartTime;
-
-		private boolean hasSetup = false;
 		private Stars mStars;
 
 		private final Runnable mDrawStars = new Runnable() {
@@ -39,9 +36,8 @@ public class StarsEngine extends WallpaperService {
 				drawFrame();
 			}
 		};
+		
 		private boolean mVisible;
-
-		private int maxWidth;
 
 		StarEngine() {
 			final Paint paint = mPaint;
@@ -68,7 +64,6 @@ public class StarsEngine extends WallpaperService {
 		@Override
 		public void onSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
 			super.onSurfaceChanged(holder, format, width, height);
-			hasSetup = false;
 			int smaller = width < height ? width : height;
 			int maxDim = smaller / 7;
 			Context c = getApplicationContext();
@@ -98,11 +93,6 @@ public class StarsEngine extends WallpaperService {
 			try {
 				c = holder.lockCanvas();
 				if (c != null) {
-					if (!hasSetup) {
-						maxWidth = c.getWidth();
-						hasSetup = true;
-					}
-					// draw something
 					c.drawColor(Color.BLACK);
 					mStars.draw(c);
 				}
